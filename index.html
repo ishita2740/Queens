@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queendom — A Queen Placement Puzzle</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>&#9817; Queendom</h1>
+
+    <div id="controls">
+      <select id="size-select" aria-label="Board size"></select>
+      <select id="difficulty-select" aria-label="Difficulty"></select>
+      <button id="btn-new-game">New Game</button>
+
+      <button id="btn-reset-marks" title="Reset all X marks on the board">
+        <svg class="reset-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+          <path
+            d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+            stroke="currentColor" stroke-width="1" fill="#000" stroke-linecap="round" />
+        </svg>
+      </button>
+      <button id="btn-copy-board" hidden title="Copy board definition to clipboard">📋 Copy Board</button>
+    </div>
+
+    <div id="status-bar">
+      <div id="lives" aria-label="Lives remaining"></div>
+      <div id="timer" aria-label="Timer">00:00</div>
+      <button id="btn-pause" title="Pause">&#10074;&#10074;</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Rules box -->
+    <div id="rules-box" class="rules-box">
+      <div class="rule-cell">One queen per color</div>
+      <div class="rule-cell">One queen per row or column</div>
+      <div class="rule-cell">Queens can't touch</div>
+    </div>
+
+    <div class="board-wrapper">
+      <div id="board-container"></div>
+
+      <!-- Pause overlay — obscures the board -->
+      <div id="pause-overlay" class="overlay hidden">
+        <div class="overlay-content">
+          <h2>&#10074;&#10074; Paused</h2>
+          <p>The board is hidden. Press Resume to continue.</p>
+          <button id="btn-resume">Resume</button>
+        </div>
+      </div>
+
+      <!-- Game over overlay (win or lose) -->
+      <div id="game-over-overlay" class="overlay hidden"></div>
+
+      <!-- Loading overlay — shown while a puzzle is being generated -->
+      <div id="loading-overlay" class="overlay loading-overlay hidden">
+        <div class="overlay-content">
+          <h2>Building Puzzle<span class="dot">.</span><span class="dot" style="animation-delay:0.2s">.</span><span
+              class="dot" style="animation-delay:0.4s">.</span></h2>
+        </div>
+      </div>
+
+      <!-- Build-failed overlay — shown when puzzle generation fails -->
+      <div id="build-fail-overlay" class="overlay build-fail-overlay hidden">
+        <div class="overlay-content">
+          <!-- Dead computer face — inline SVG -->
+          <svg class="fail-icon" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <!-- Monitor body -->
+            <rect x="14" y="10" width="100" height="76" rx="8" fill="#555" stroke="#333" stroke-width="3" />
+            <!-- Screen -->
+            <rect x="20" y="16" width="88" height="64" rx="4" fill="#999" />
+            <!-- Left eye (X) -->
+            <line x1="36" y1="34" x2="50" y2="48" stroke="#333" stroke-width="4" stroke-linecap="round" />
+            <line x1="50" y1="34" x2="36" y2="48" stroke="#333" stroke-width="4" stroke-linecap="round" />
+            <!-- Right eye (X) -->
+            <line x1="78" y1="34" x2="92" y2="48" stroke="#333" stroke-width="4" stroke-linecap="round" />
+            <line x1="92" y1="34" x2="78" y2="48" stroke="#333" stroke-width="4" stroke-linecap="round" />
+            <!-- Mouth — flat line -->
+            <line x1="48" y1="60" x2="80" y2="60" stroke="#333" stroke-width="2.5" stroke-linecap="round" />
+            <!-- Tongue — upside-down U attached to mouth, slightly right -->
+            <path d="M68 60 Q68 72 74 72 Q80 72 80 60" fill="#333" />
+            <!-- Stand -->
+            <rect x="54" y="86" width="20" height="14" fill="#555" stroke="#333" stroke-width="2" />
+            <!-- Base -->
+            <rect x="38" y="98" width="52" height="8" rx="3" fill="#555" stroke="#333" stroke-width="2" />
+          </svg>
+          <h2>Puzzle Build Failed</h2>
+          <button id="btn-retry">Try Again?</button>
+        </div>
+      </div>
+
+      <!-- Solution overlay — close button only; queens render on real board cells -->
+      <div id="solution-overlay" class="solution-overlay hidden">
+        <button class="close-btn" aria-label="Close">&times;</button>
+      </div>
+
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <p class="footer-line-1">👆 Click or drag to mark &middot; 🖱️ Double-click to place a queen</p>
+      <p class="footer-line-2">⌨️ P = pause &middot; N = new game</p>
+      <a href="https://github.com/ishita2740/Queens" target="_blank" rel="noopener noreferrer" class="github-link">
+        <svg class="gh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20"
+          fill="currentColor" aria-hidden="true">
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+        </svg>
+        Get the code!
+      </a>
+    </div>
+  </footer>
+
+  <!-- SVG templates for board cell rendering (queens and X marks). -->
+  <!-- Fetched by renderer.js via _getTemplateSVG() to avoid recreating strings on every render. -->
+  <template id="queen-svg">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 50 L3 18 L17 32 L32 8 L47 32 L61 18 L56 50 Q32 56 8 50 Z" fill="#FFD700" stroke="rgba(0,0,0,1)"
+        stroke-width="3" stroke-linejoin="round" />
+      <circle cx="17" cy="32" r="3" fill="#E74C3C" />
+      <circle cx="32" cy="8" r="3" fill="#3498DB" />
+      <circle cx="47" cy="32" r="3" fill="#2ECC71" />
+    </svg>
+  </template>
+  <template id="x-mark-svg">
+    <!-- Each diagonal is drawn twice: white background stroke, then dark foreground stroke -->
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="25" y1="25" x2="75" y2="75" stroke="#fff" stroke-width="10" stroke-linecap="round" />
+      <line x1="75" y1="25" x2="25" y2="75" stroke="#fff" stroke-width="10" stroke-linecap="round" />
+      <line x1="25" y1="25" x2="75" y2="75" stroke="#333" stroke-width="8" stroke-linecap="round" />
+      <line x1="75" y1="25" x2="25" y2="75" stroke="#333" stroke-width="8" stroke-linecap="round" />
+    </svg>
+  </template>
+  <template id="dead-x-svg">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <line x1="25" y1="25" x2="75" y2="75" stroke="#fff" stroke-width="12" stroke-linecap="round" />
+      <line x1="75" y1="25" x2="25" y2="75" stroke="#fff" stroke-width="12" stroke-linecap="round" />
+      <line x1="25" y1="25" x2="75" y2="75" stroke="#C00" stroke-width="12" stroke-linecap="round" />
+      <line x1="75" y1="25" x2="25" y2="75" stroke="#C00" stroke-width="12" stroke-linecap="round" />
+    </svg>
+  </template>
+
+  <script type="module" src="js/main.js"></script>
+
+</body>
+
+</html>

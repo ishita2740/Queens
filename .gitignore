@@ -1,0 +1,14 @@
+# Exclude 
+/node_modules/
+*.sh
+
+# Secrets
+.env
+.env.local
+.env.*.local
+*.password
+
+# Agent stuff
+/.claude/
+/.pi-subagents/
+/.pi-tasks/

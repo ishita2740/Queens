@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Queendom — Solver Inspector</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Solver-viewer-specific styles */
+    body { min-height: 100vh; }
+
+    .viewer-container {
+      width: 100%;
+      max-width: 960px;
+      padding: 20px;
+    }
+
+    h1 { margin-bottom: 8px; }
+
+    .subtitle {
+      color: rgba(255,255,255,0.8);
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    /* Input area */
+    .input-section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .input-section label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    #board-input {
+      width: 100%;
+      min-height: 120px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      resize: vertical;
+    }
+
+    #board-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-solve {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-size: 1.1rem;
+      padding: 10px 28px;
+    }
+
+    .btn-load-fixture {
+      background: linear-gradient(135deg, #a8edea, #fed6e3);
+      color: #333;
+    }
+
+    /* Error display */
+    .error-msg {
+      color: #e74c3c;
+      font-weight: 700;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .error-msg.visible { display: block; }
+
+    /* Results area */
+    #results { display: none; }
+    #results.visible { display: block; }
+
+    /* Board preview */
+    .board-preview-section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .board-preview-section h2 {
+      font-family: 'Fredoka One', cursive;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    /* Steps */
+    .steps-section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .steps-section h2 {
+      font-family: 'Fredoka One', cursive;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .step-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .step-card:hover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.04);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .step-number {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-technique {
+      font-weight: 700;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .step-badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .badge-placement {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-elimination {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge-nothing {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .step-detail {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.6;
+      transition: max-height 0.2s, opacity 0.2s;
+      overflow: hidden;}
+
+    .step-detail .reason {
+      color: #667eea;
+      font-style: italic;
+    }
+
+    .step-detail strong {
+      color: #333;
+    }
+
+    /* Expand/collapse for long steps */
+    .step-card.collapsed .step-detail {
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      padding-top: 0;
+    }
+
+    .step-expand-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #667eea;
+      padding: 2px 6px;
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .step-expand-btn:hover {
+      transform: scale(1.2);
+    }
+
+    /* Solution */
+    .solution-section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .solution-section h2 {
+      font-family: 'Fredoka One', cursive;
+      color: #155724;
+      margin-bottom: 16px;
+    }
+
+    .solution-grid {
+      display: grid;
+      gap: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      width: fit-content;
+      margin: 0 auto;
+    }
+
+    .solution-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .solution-cell.has-queen {
+      background: #d4edda !important;
+    }
+
+    .solution-cell.has-queen::after {
+      content: '♛';
+      font-size: 1.6em;
+      color: #333;
+    }
+
+    .solution-list {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .solution-chip {
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border: 2px solid #28a745;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-weight: 700;
+      color: #155724;
+      font-size: 0.9rem;
+    }
+
+    /* Link back */
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 8px 20px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .back-link:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    @media (max-width: 600px) {
+      .viewer-container { padding: 12px; }
+      .input-section, .steps-section, .solution-section, .board-preview-section {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="viewer-container">
+  <h1>&#9817; Solver Inspector</h1>
+  <p class="subtitle">Paste a board definition to see every step of the logical solution.</p>
+
+  <!-- Input -->
+  <div class="input-section">
+    <label for="board-input">Board Definition (from "Copy Board" button):</label>
+    <textarea id="board-input" placeholder='{"size":8,"difficulty":"medium","regions":["0 0 1 ..."],...}'></textarea>
+    <div class="btn-row">
+      <button class="btn-solve" id="btn-solve">🔍 Solve Step-by-Step</button>
+      <select id="fixture-select" style="background:#fff;color:#333;border-radius:25px;padding:8px 16px;font-weight:700;">
+        <option value="">— Load Fixture —</option>
+      </select>
+    </div>
+    <p class="error-msg" id="error-msg"></p>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <div class="board-preview-section" id="board-preview"></div>
+    <div class="steps-section" id="steps-section"></div>
+    <div class="solution-section" id="solution-section"></div>
+  </div>
+
+  <a href="index.html" class="back-link">← Back to Game</a>
+</div>
+
+<script type="module" src="js/solver-viewer.js"></script>
+</body>
+</html>

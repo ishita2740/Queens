@@ -1,0 +1,14 @@
+{
+  "name": "queendom",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A browser puzzle game: place N queens on an NxN grid divided into N colored regions.",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.10"
+  }
+}
