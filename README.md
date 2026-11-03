@@ -27,24 +27,6 @@ You start with 3 lives ❤️❤️❤️ shown in the status bar. An incorrect 
 2. No queen may be adjacent to another (including diagonally — Chebyshev distance > 1).
 3. Each colored region contains exactly one queen.
 
-This is similar to N-Queens, but with the added constraint of non-adjacency and the guidance of colored regions that make every board solvable by logic alone.
-
-## Playing
-
-Open `index.html` in a browser, or serve locally:
-
-```bash
-npx serve .
-```
-
-No build step is needed — plain HTML/CSS/JS with ESM modules.
-
-### Debug Mode
-
-Append `?debug=1` to the URL to reveal the **Copy Board** button, which serializes the current board definition (regions + solution) as JSON for debugging or sharing.
-
-```
-http://localhost:3000/?debug=1
 ```
 
 ## Development
@@ -76,8 +58,6 @@ The codebase follows a unidirectional pipeline: **Generator → Solver → Engin
 | **Medium** | All above techniques | Up to 1 attempt |
 | **Hard** | All techniques including forcing chains | Up to 2 attempts |
 
-*Forcing chains* temporarily assume a candidate is correct and check if it leads to a contradiction — this allows the solver to eliminate impossible candidates even when direct deduction isn't enough.
-
 ### Board Generation
 
 1. Generate N non-adjacent queen positions (no shared rows/columns)
@@ -108,11 +88,6 @@ test/
 index.html              Main game entry point
 solver-viewer.html      Solver inspector — paste a board definition and watch the solver walk through it step by step
 ```
-
-### Debugging Tools
-
-- **Solver Viewer** (`solver-viewer.html`): Paste a board definition (use the "Copy Board" button in debug mode to get one) and watch the solver walk through every deduction step with a detailed, human-readable walkthrough.
-- **Debug Mode**: Append `?debug=1` to any URL to reveal the **📋 Copy Board** button.
 
 ## Tests
 
